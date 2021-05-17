@@ -1,0 +1,85 @@
+#pragma once
+#ifndef __CUST_EXT_CPP__
+#ifdef __cplusplus
+
+#define __CUST_EXT_CPP__ "defined CPP extensions"
+
+#include "cstext.h"
+#include <string>
+
+#pragma region C++-specific extensions
+
+#define Namespace(name) namespace name { 
+#define EndNamespace } 
+#define Class(cname) class cname { 
+#define InheritClass(cname, ...) class cname : __VA_ARGS__ { 
+#define HClass(cname) class cname; 
+#define HInheritClass(cname, ...) class cname : __VA_ARGS__;
+#define EndClass }; 
+
+#define Template(...) template <typename __VA_ARGS__>
+
+#undef String
+#define CString char*
+
+typedef std::string String;
+
+typedef bool Boolean;
+
+AttribFunction(Template(T), NoReturn, Swap, T &t1, T &t2)
+    T tmp = std::move(t1);
+    t1 = std::move(t2);
+    t2 = std::move(tmp);
+EndFunction
+
+#pragma region AccessModifiers
+
+#define Public public:
+#define Private private:
+
+#pragma endregion
+
+#pragma region Streams
+
+#include <iostream>
+
+#define CharOut std::cout
+
+Namespace(Extensions)
+    InheritClass(InOutStream, public std::ios)
+        Public InOutStream() : std::ios(std::ios::rdbuf()) {}
+    EndClass
+
+    InheritClass(InputStream, public std::istream)
+        Public InputStream() : std::istream(std::cin.rdbuf()) {}
+    EndClass
+
+    InheritClass(OutputStream, public std::ostream)
+        Public OutputStream() : std::ostream(std::cout.rdbuf()) {}
+    EndClass
+
+    Class(Console)
+        Public
+            NoInit OutputStream Put;
+            NoInit InputStream Get;
+
+            AttribFunction(Template(T) friend, OutputStream&, operator<, OutputStream& _Ostr, T& _Msg)
+                _Ostr << _Msg;
+                return _Ostr;
+            EndFunction
+
+            AttribFunction(Template(T) friend, InputStream&, operator>, InputStream& _Istr, T& _Msg)
+                _Istr >> _Msg;
+                return _Istr;
+            EndFunction
+    EndClass
+EndNamespace
+
+#pragma endregion
+
+#pragma endregion
+
+#else
+#error CSTEXT can only be used with C++! For C, use cstext.h
+#endif
+#endif
